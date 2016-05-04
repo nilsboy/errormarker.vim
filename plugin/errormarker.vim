@@ -33,7 +33,7 @@ if exists("g:loaded_errormarker") || &compatible
 endif
 
 " Version number.
-let g:loaded_errormarker = "0.2"
+let g:loaded_errormarker = "0.2.1"
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -96,7 +96,9 @@ execute "sign define errormarker_warning text=" . g:errormarker_warningtext .
             \ " texthl=" . g:errormarker_warningtextgroup .
             \ s:warningicon
 
-" Setup the autocommands that handle the MRUList and other stuff.
+let s:positions = {}
+
+" Setup the autocommands
 augroup errormarker
     autocmd QuickFixCmdPost make call <SID>SetErrorMarkers()
 augroup END
@@ -121,19 +123,21 @@ function! s:SetErrorMarkers()
         set ballooneval
     endif
 
-    sign unplace *
+    for l:key in keys(s:positions)
+        execute ":sign unplace " . l:key
+    endfor
 
-    let l:positions = {}
+    let s:positions = {}
     for l:d in getqflist()
         if (l:d.bufnr == 0 || l:d.lnum == 0)
             continue
         endif
 
         let l:key = l:d.bufnr . l:d.lnum
-        if has_key(l:positions, l:key)
+        if has_key(s:positions, l:key)
             continue
         endif
-        let l:positions[l:key] = 1
+        let s:positions[l:key] = 1
 
         if strlen(l:d.type) &&
                     \ stridx(g:errormarker_warningtypes, l:d.type) >= 0
