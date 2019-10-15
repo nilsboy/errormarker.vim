@@ -66,20 +66,23 @@ call s:DefineVariable("g:errormarker_erroricon", s:iconpath . "error.ico")
 " Defines the icon to show for warnings in the gui
 call s:DefineVariable("g:errormarker_warningicon", s:iconpath . "warning.ico")
 
+" Defines the icon to show for infos in the gui
+call s:DefineVariable("g:errormarker_infoicon", s:iconpath . "info.ico")
+
 " Defines the text (two characters) to show in the gui
 call s:DefineVariable("g:errormarker_errortext", "EE")
 call s:DefineVariable("g:errormarker_warningtext", "WW")
+call s:DefineVariable("g:errormarker_infotext", "II")
 
 " Defines the highlighting group to use in the gui
 call s:DefineVariable("g:errormarker_errorgroup", "ErrorMsg")
 call s:DefineVariable("g:errormarker_warninggroup", "Todo")
+call s:DefineVariable("g:errormarker_infogroup", "Normal")
 
 " Defines the highlighting group to use for the marker in the gui
 call s:DefineVariable("g:errormarker_errortextgroup", "ErrorMsg")
 call s:DefineVariable("g:errormarker_warningtextgroup", "Todo")
-
-" Defines the error types that should be treated as warning
-call s:DefineVariable("g:errormarker_warningtypes", "wW")
+call s:DefineVariable("g:errormarker_infotextgroup", "Normal")
 
 " === Global ============================================================={{{1
 
@@ -92,6 +95,10 @@ let s:warningicon = ""
 if filereadable(g:errormarker_warningicon)
     let s:warningicon = " icon=" . escape(g:errormarker_warningicon, '| \')
 endif
+let s:infoicon = ""
+if filereadable(g:errormarker_infoicon)
+    let s:infoicon = " icon=" . escape(g:errormarker_infoicon, '| \')
+endif
 execute "sign define errormarker_error text=" . g:errormarker_errortext .
             \ " linehl=" . g:errormarker_errorgroup .
             \ " texthl=" . g:errormarker_errortextgroup .
@@ -101,6 +108,11 @@ execute "sign define errormarker_warning text=" . g:errormarker_warningtext .
             \ " linehl=" . g:errormarker_warninggroup .
             \ " texthl=" . g:errormarker_warningtextgroup .
             \ s:warningicon
+
+execute "sign define errormarker_info text=" . g:errormarker_infotext .
+            \ " linehl=" . g:errormarker_infogroup .
+            \ " texthl=" . g:errormarker_infotextgroup .
+            \ s:infoicon
 
 let s:positions = {}
 
@@ -157,9 +169,16 @@ function! s:SetErrorMarkers()
         endif
         let s:positions[l:key] = 1
 
-        if strlen(l:d.type) &&
-                    \ stridx(g:errormarker_warningtypes, l:d.type) >= 0
-            let l:name = "errormarker_warning"
+        if strlen(l:d.type)
+            if l:d.type == 'e'
+                let l:name = "errormarker_error"
+              elseif l:d.type == 'w'
+                let l:name = "errormarker_warning"
+              elseif l:d.type == 'i'
+                let l:name = "errormarker_info"
+              else
+                let l:name = "errormarker_error"
+            endif
         else
             let l:name = "errormarker_error"
         endif
